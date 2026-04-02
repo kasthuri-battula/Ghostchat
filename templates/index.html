@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>GhostChat — Vanishing Messages</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #13131a;
+      --border: #1e1e2e;
+      --accent: #7c6aff;
+      --accent2: #ff6a9b;
+      --text: #e8e8f0;
+      --muted: #6b6b80;
+      --glow: rgba(124, 106, 255, 0.3);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Animated background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 20% 30%, rgba(124,106,255,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 80% 70%, rgba(255,106,155,0.08) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Floating orbs */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.15;
+      pointer-events: none;
+      animation: float 8s ease-in-out infinite;
+    }
+    .orb-1 { width: 300px; height: 300px; background: var(--accent); top: -50px; left: -80px; animation-delay: 0s; }
+    .orb-2 { width: 200px; height: 200px; background: var(--accent2); bottom: 50px; right: -50px; animation-delay: -4s; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px) scale(1); }
+      50% { transform: translateY(-30px) scale(1.05); }
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 460px;
+      padding: 24px;
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .logo-icon {
+      font-size: 3rem;
+      display: block;
+      margin-bottom: 12px;
+      animation: pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+    }
+
+    .logo h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.02em;
+    }
+
+    .logo p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 6px;
+      font-weight: 300;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      backdrop-filter: blur(10px);
+    }
+
+    .btn-create {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--accent), #9b59f5);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      text-align: center;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 24px var(--glow);
+      letter-spacing: 0.02em;
+    }
+
+    .btn-create:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px var(--glow);
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 24px 0;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .divider span {
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .join-form {
+      display: flex;
+      gap: 10px;
+    }
+
+    .join-form input {
+      flex: 1;
+      padding: 14px 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    .join-form input::placeholder {
+      color: var(--muted);
+      font-weight: 400;
+      letter-spacing: 0.05em;
+      text-transform: none;
+    }
+
+    .join-form input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(124,106,255,0.15);
+    }
+
+    .join-form button {
+      padding: 14px 20px;
+      background: var(--border);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .join-form button:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .feature {
+      text-align: center;
+      padding: 16px 8px;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .feature-icon { font-size: 1.4rem; display: block; margin-bottom: 6px; }
+    .feature span { font-size: 0.72rem; color: var(--muted); line-height: 1.4; }
+  </style>
+</head>
+<body>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="container">
+    <div class="logo">
+      <span class="logo-icon">👻</span>
+      <h1>GhostChat</h1>
+      <p>Messages that vanish when you leave</p>
+    </div>
+
+    <div class="card">
+      <a href="/create" class="btn-create">✦ Create New Ghost Room</a>
+
+      <div class="divider"><span>or join existing</span></div>
+
+      <form class="join-form" action="/join" method="POST">
+        <input type="text" name="room_id" placeholder="Enter room code" maxlength="8" autocomplete="off" autofocus/>
+        <button type="submit">Join →</button>
+      </form>
+
+      <div class="features">
+        <div class="feature">
+          <span class="feature-icon">💨</span>
+          <span>Auto-wipe on exit</span>
+        </div>
+        <div class="feature">
+          <span class="feature-icon">🔐</span>
+          <span>No accounts needed</span>
+        </div>
+        <div class="feature">
+          <span class="feature-icon">⚡</span>
+          <span>Real-time chat</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

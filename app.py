@@ -3,10 +3,11 @@ from flask_socketio import SocketIO, join_room, leave_room, emit
 import uuid
 import time
 import threading
+import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'ghostchat-secret-2024'
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='gevent')
 
 # In-memory storage (ephemeral - all data lost on restart)
 rooms = {}  # room_id -> {messages: [], users: set(), created_at: timestamp}
@@ -131,4 +132,6 @@ def on_disconnect():
                 }, to=room_id)
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True, host='0.0.0.0', port=5000)
+    
+    port = int(os.environ.get('PORT', 5000))
+    socketio.run(app, debug=False, host='0.0.0.0', port=port, use_reloader=False)
